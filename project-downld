@@ -1,0 +1,48 @@
+from py_compile import main
+import requests
+from urllib.parse import urlparse
+import os
+
+def is_image_url(url):
+    image_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff')
+    parsed = urlparse(url) #parses/breaks the url and checks if the path ends with any of the specified image extensions
+    return parsed.path.lower().endswith(image_extensions) #returns True if the url is an image url that ends with the extensions above, otherwise False
+
+def download_image(url):
+    try: 
+        response = requests.get(url, stream=True, timeout = 10)
+        response.raise_for_status() #raises an exception if the request was unsuccessful
+
+        #try getting the filename from the url, if it fails, use a default name
+        filename= os.path.basename(urlparse(url).path) 
+        if not filename: #if the filename is empty, assign a default name
+            filename = "downloaded_image.jpg"
+        with open (filename, 'wb') as file:
+            for chunk in response.iter_content(1024): #iter_content() method is used to iterate over the response content in chunks/small pieces, which is useful for downloading large files without consuming too much memory
+                file.write(chunk) #writes the image data to a file in chunks of 1024 bytes, which is more efficient for large files
+
+        print(f"\n✅ Image successfully downloaded as: {filename}")
+
+    except requests.exceptions.RequestException as e: #catches any exceptions that may occur during the HTTP request, such as connection errors, timeouts, or invalid URLs, and prints an error message with the details of the exception
+        print(f" ❌ Failed to download the image. Error: {e}")  
+
+def main():
+    print ("\nWelcome to the Ubuntu Community.")
+    print("This downloader helps you get your favorite images from The Ubuntu Community")
+    print()
+    url =input("Enter the image URL: ").strip() #removes any leading or trailing whitespace from the input URL
+        
+    if not url.startswith("http"):
+       print ("Invalid URL. Kindly redo")
+
+    if not is_image_url(url):
+        print ("The provided URL does not point to a valid image. Please provide a URL that ends with an image extension (e.g., .jpg, .png).")
+
+    download_image(url)
+
+if __name__ == "__main__":
+    main()
+    
+print ("\nThank you for using the Ubuntu Commmunity Downloader")
+print ("\nYou are because I am, and we are because we are. See you later on😊")
+print()
